@@ -1,0 +1,933 @@
+# Prerequisites (Packages & Libraries)
+
+lapply(c("tidyverse", "ggrepel", "ggthemes", "ggplot2", "rlang", "forcats")
+       
+       , library, character.only = TRUE)
+
+
+
+
+
+library(tidyverse)
+
+library(ggrepel)
+
+library(nycflights13)
+
+library(ggthemes)
+
+library(ggplot2)
+
+library(rlang)
+
+library(forcats)
+
+
+
+## 9.2.1 Exercises
+
+#1. Create a scatterplot of hwy vs. displ where the points are pink filled in triangles.
+
+ggplot(mpg, aes(x = hwy, y = displ)) +
+  
+  geom_point(color = "pink", shape = "triangle")
+
+
+
+#2. Why did the following code not result in a plot with blue points?
+
+
+
+# The color should be set outside of the aesthetic mapping.
+
+
+
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  
+  geom_point(color = "blue")
+
+
+
+#3. What does the stroke aesthetic do? What shapes does it work with? (Hint: use ?geom_point)
+
+# Stroke controls the size of the edge/border of the points for shapes 21-24 (filled circle, square, triangle, and diamond).
+
+
+
+#4. What happens if you map an aesthetic to something other than a variable name, like aes(color = displ < 5)? Note, you’ll also need to specify x and y.
+
+# It creates a logical variable with values TRUE and FALSE for cars with displacement values below and above 5.
+
+ggplot(mpg, aes(x = hwy, y = displ, color = displ < 5)) + 
+  
+  geom_point()
+
+
+
+## 9.3.1 Exercises
+
+# What geom would you use to draw a line chart? A boxplot? A histogram? An area chart?
+
+# For a line chart you can use geom_line(). For a boxplot you can use geom_boxplot(). For a histogram, geom_histogram(). For an area chart, geom_area().
+
+
+
+# Earlier in this chapter we used show.legend without explaining it:
+
+# What does show.legend = FALSE do here? What happens if you remove it? Why do you think we used it earlier?
+
+# it removes the legend for the smooth lines that are colored based on drv.
+
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  
+  geom_smooth(aes(color = drv), show.legend = FALSE)
+
+
+
+# What does the se argument to geom_smooth() do?
+
+# It displays the confidence interval around the smooth lin. You can remove this with se = FALSE.
+
+
+
+# Recreate the R code necessary to generate the following graphs. Note that wherever a categorical variable is used in the plot, it’s drv.
+
+ggplot(mpg, aes(x = displ, y = hwy)) + 
+  
+  geom_point() + 
+  
+  geom_smooth(se = FALSE)
+
+ggplot(mpg, aes(x = displ, y = hwy)) + 
+  
+  geom_smooth(aes(group = drv), se = FALSE) +
+  
+  geom_point()
+
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) + 
+  
+  geom_point() + 
+  
+  geom_smooth(se = FALSE)
+
+ggplot(mpg, aes(x = displ, y = hwy)) + 
+  
+  geom_point(aes(color = drv)) + 
+  
+  geom_smooth(se = FALSE)
+
+ggplot(mpg, aes(x = displ, y = hwy)) + 
+  
+  geom_point(aes(color = drv)) +
+  
+  geom_smooth(aes(linetype = drv), se = FALSE)
+
+ggplot(mpg, aes(x = displ, y = hwy)) + 
+  
+  geom_point(size = 4, color = "white") + 
+  
+  geom_point(aes(color = drv))
+
+
+
+## 9.4.1 Exercises
+
+#1. What happens if you facet on a continuous variable?
+
+# Faceting by a continuous variable results in one facet per each unique value of the continuous variable. 
+
+
+
+#2. What do the empty cells in the plot above with facet_grid(drv ~ cyl) mean? Run the following code. How do they relate to the resulting plot?
+
+#There are no cars with front-wheel drive and 5 cylinders, therefore the facet corresponding to that combination is empty. In general, empty facets mean no observations fall in that category.
+
+
+
+ggplot(mpg) + 
+  
+  geom_point(aes(x = drv, y = cyl))
+
+
+
+#3. What plots does the following code make? What does . do?
+
+# In the first plot, with facet_grid(drv ~ .), the period means “don’t facet across columns”. In the second plot, with facet_grid(. ~ drv), the period means “don’t facet across rows”. In general, the period means “keep everything together”.
+
+
+
+ggplot(mpg) + 
+  
+  geom_point(aes(x = displ, y = hwy)) +
+  
+  facet_grid(drv ~ .)
+
+
+
+ggplot(mpg) + 
+  
+  geom_point(aes(x = displ, y = hwy)) +
+  
+  facet_grid(. ~ cyl)
+
+
+
+#4. Take the first faceted plot in this section:
+
+
+
+ggplot(mpg) + 
+  
+  geom_point(aes(x = displ, y = hwy)) + 
+  
+  facet_wrap(~ cyl, nrow = 2)
+
+
+
+# What are the advantages to using faceting instead of the color aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset?
+
+# The benefit of faceting is that it allows you to view each car class separately, avoiding any overplotting. However, the downside is that it makes comparing the different classes more difficult since they are shown in separate plots. While using color can help distinguish between classes more easily, combining faceting and color still doesn't fully resolve the challenge of making cross-class comparisons straightforward.
+
+
+
+#5. Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? Why doesn’t facet_grid() have nrow and ncol arguments?
+
+# nrow controls the number of panels per row, and ncol controls the number of columns the panels are arranged in. However, facet_grid() doesn’t have these arguments because the number of rows and columns is automatically determined by the levels of the two categorical variables being plotted. The dir argument controls whether the panels are arranged horizontally or vertically.
+
+
+
+#6. Which of the following plots makes it easier to compare engine size (displ) across cars with different drive trains? What does this say about when to place a faceting variable across rows or columns?
+
+# The first plot makes it easier to compare engine size (displ) across different drive trains because displ is plotted on a shared axis across the panels. This suggests that if the goal is to compare values based on a specific variable, that variable should be positioned on the shared axis.
+
+
+
+ggplot(mpg, aes(x = displ)) + 
+  
+  geom_histogram() + 
+  
+  facet_grid(drv ~ .)
+
+
+
+ggplot(mpg, aes(x = displ)) + 
+  
+  geom_histogram() +
+  
+  facet_grid(. ~ drv)
+
+
+
+#7. Recreate the following plot using facet_wrap() instead of facet_grid(). How do the positions of the facet labels change?
+
+ggplot(mpg) + 
+  
+  geom_point(aes(x = displ, y = hwy)) +
+  
+  facet_grid(drv ~ .)
+
+
+
+ggplot(mpg) + 
+  
+  geom_point(aes(x = displ, y = hwy)) +
+  
+  facet_wrap(~drv, nrow = 3)
+
+
+
+## 9.5.1 Exercises
+
+#1. What is the default geom associated with stat_summary()? How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+diamonds |>
+  
+  group_by(cut) |>
+  
+  summarize(
+    
+    lower = min(depth),
+    
+    upper = max(depth),
+    
+    midpoint = median(depth)
+    
+  ) |>
+  
+  ggplot(aes(x = cut, y = midpoint)) +
+  
+  geom_pointrange(aes(ymin = lower, ymax = upper))
+
+
+
+#2. What does geom_col() do? How is it different from geom_bar()?
+
+# `geom_col()` plots the bar heights based on values already present in the data, whereas `geom_bar()` calculates the heights from the data before plotting them. `geom_col()` is useful for creating bar plots from a data frame that represents a frequency table, while `geom_bar()` is suitable for bar plots where each row in the data frame represents an individual observation.
+
+
+
+#3. Most geoms and stats come in pairs that are almost always used in concert. Make a list of all the pairs. What do they have in common? (Hint: Read through the documentation.)
+
+
+
+geom_stat_pairs <- tibble(
+  
+  Geom = c("geom_bar()", "geom_histogram()", "geom_smooth()", "geom_point()", "geom_line()",
+           
+           "geom_boxplot()", "geom_violin()", "geom_density()", "geom_col()", "geom_text()"),
+  
+  Stat = c("stat_count()", "stat_bin()", "stat_smooth()", "stat_identity()", "stat_identity()",
+           
+           "stat_boxplot()", "stat_ydensity()", "stat_density()", "stat_identity()", "stat_identity()"),
+  
+  Description = c(
+    
+    "Bar plots use the count of observations as a stat",
+    
+    "Histograms bin data and count observations",
+    
+    "Adds a smoothed line using a model",
+    
+    "Points display raw data without transformation",
+    
+    "Lines display raw data without transformation",
+    
+    "Creates box plots using summary stats",
+    
+    "Creates violin plots using density estimates",
+    
+    "Plots the density estimate",
+    
+    "Bars where height = data value",
+    
+    "Places text at specified locations"
+    
+  )
+  
+)
+
+
+
+print(geom_stat_pairs)
+
+
+
+#4. What variables does stat_smooth() compute? What arguments control its behavior?
+
+# stat_smooth() computes the following variables:
+
+
+
+# y or x: Predicted value
+
+# ymin or xmin: Lower pointwise confidence interval around the mean
+
+# ymax or xmax: Upper pointwise confidence interval around the mean
+
+# se: Standard error
+
+
+
+#5. In our proportion bar chart, we needed to set group = 1. Why? In other words, what is the problem with these two graphs?
+
+# In the following pair of plots, we see that setting group = 1 results in the marginal proportions of cuts being plotted.
+
+ggplot(diamonds, aes(x = cut, y = after_stat(prop))) + 
+  
+  geom_bar()
+
+ggplot(diamonds, aes(x = cut, fill = color, y = after_stat(prop))) + 
+  
+  geom_bar()
+
+
+
+## 9.6.1 Exercises
+
+#1. What is the problem with the following plot? How could you improve it?
+
+
+
+ggplot(mpg, aes(x = cty, y = hwy)) + 
+  
+  geom_point()
+
+
+
+# The mpg dataset has 234 observations, however the plot shows fewer observations than that. This is due to overplotting; many cars have the same city and highway mileage. This can be addressed by jittering the points.
+
+
+
+ggplot(mpg, aes(x = cty, y = hwy)) + 
+  
+  geom_jitter()
+
+
+
+#2. What, if anything, is the difference between the two plots? Why?
+
+# The two plots are identical.
+
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  
+  geom_point()
+
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  
+  geom_point(position = "identity")
+
+
+
+#3. What parameters to geom_jitter() control the amount of jittering?
+
+# The width and height parameters control the amount of horizontal and vertical displacement. Higher values mean more displacement.
+
+
+
+#4. Compare and contrast geom_jitter() with geom_count().
+
+# geom_jitter() adds random noise to the location of the points to avoid overplotting. geom_count() sizes the points based on the number of observations at a given location.
+
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  
+  geom_jitter()
+
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  
+  geom_count()
+
+
+
+#5. What’s the default position adjustment for geom_boxplot()? Create a visualization of the mpg dataset that demonstrates it.
+
+# The default is position for geom_boxplot() is "dodge2"
+
+ggplot(mpg, aes(x = cty, y = displ)) +
+  
+  geom_boxplot()
+
+
+
+ggplot(mpg, aes(x = cty, y = displ)) +
+  
+  geom_boxplot(position = "dodge2")
+
+
+
+## 9.7.1 Exercises
+
+# Turn a stacked bar chart into a pie chart using coord_polar().
+
+
+
+ggplot(diamonds, aes(x = "", fill = cut)) +
+  
+  geom_bar()
+
+
+
+ggplot(diamonds, aes(x = "", fill = cut)) +
+  
+  geom_bar() + 
+  
+  coord_polar(theta = "y")
+
+
+
+# What’s the difference between coord_quickmap() and coord_map()?
+
+# coord_map() projects the portion of the earth you’re plotting onto a flat 2D plane using a given projection. coord_quickmap() is an approximation of this projection.
+
+
+
+# What does the following plot tell you about the relationship between city and highway mpg? Why is coord_fixed() important? What does geom_abline() do?
+
+# `geom_abline()` adds a straight line at \( y = x \), meaning where highway mileage equals city mileage. `coord_fixed()` sets a fixed scale for the coordinate system, making the units on the x and y axes equivalent. Since all the points lie above the line, this indicates that highway mileage is consistently higher than city mileage for these cars.
+
+
+
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  
+  geom_point() + 
+  
+  geom_abline() +
+  
+  coord_fixed()
+
+
+
+## 10.3.3 Exercises
+
+#1. Explore the distribution of each of the x, y, and z variables in diamonds. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.
+
+
+
+summary(select(diamonds, x, y,z))
+
+# From this dataset you can see X & Y > Z and there are outliers. Some diamonds are values at 0.
+
+
+
+filter(diamonds, x == 0 | y == 0 | z == 0)
+
+diamonds %>%
+  
+  arrange(desc(y)) %>%
+  
+  head()
+
+
+
+diamonds %>%
+  
+  arrange(desc(z)) %>%
+  
+  head()
+
+
+
+# Closer look at the right skew of (x,y,z)
+
+
+
+filter(diamonds, x > 0, x < 10) %>%
+  
+  ggplot() +
+  
+  geom_histogram(mapping = aes(x = x), binwidth = 0.01) +
+  
+  scale_x_continuous(breaks = 1:10)
+
+
+
+filter(diamonds, y > 0, y< 10) %>%
+  
+  ggplot() +
+  
+  geom_histogram(mapping = aes(x = y), binwidth= 0.01) +
+  
+  scale_x_continuous(breaks = 1:10)
+
+
+
+summarise(diamonds, mean(x>y), mean(x>z), mean(y>z))
+
+
+
+# Depth is always smaller the length or width. The shallower the diamond is the more affect it has the reflection of light.
+
+
+
+#2. Explore the distribution of price. Do you discover anything unusual or surprising? (Hint: Carefully think about the binwidth and make sure you try a wide range of values.)
+
+ggplot(filter(diamonds, price < 2500), aes(x = price))+ 
+  
+  geom_histogram(binwidth= 10, center = 0)
+
+
+
+ggplot(filter(diamonds), aes(x = price)) +
+  
+  geom_histogram(binwidth = 100, center =0)
+
+
+
+#3. How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?
+
+diamonds %>%
+  
+  filter(carat >= 0.99, carat <= 1) %>%
+  
+  count(carat)
+
+
+
+diamonds %>%
+  
+  filter(carat >= 0.9, carat <= 1.1) %>%
+  
+  count(carat) %>%
+  
+  print(n= Inf)
+
+
+
+#4. Compare and contrast coord_cartesian() vs. xlim() or ylim() when zooming in on a histogram. What happens if you leave binwidth unset? What happens if you try and zoom so only half a bar shows?
+
+ggplot(diamonds) +
+  
+  geom_histogram(mapping = aes(x = price)) +
+  
+  coord_cartesian(xlim = c(100, 5000), ylim = c(0, 3000))
+
+
+
+ggplot(diamonds) +
+  
+  geom_histogram(mapping = aes(x = price)) +
+  
+  xlim(100, 5000) +
+  
+  ylim(0, 3000)
+
+
+
+## 10.4.1 Exercises
+
+#1. What happens to missing values in a histogram? What happens to missing values in a bar chart? Why is there a difference in how missing values are handled in histograms and bar charts?
+
+# Missing values are removed when the number of observations in each bin are calculated. See the warning message: Removed 9 rows containing non-finite values (stat_bin)
+
+
+
+diamonds2 <- diamonds %>%
+  
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+
+
+
+ggplot(diamonds2, aes(x = y)) +
+  
+  geom_histogram()
+
+
+
+diamonds %>%
+  
+  mutate(cut = if_else(runif(n()) < 0.1, NA_character_, as.character(cut))) %>%
+  
+  ggplot() +
+  
+  geom_bar(mapping = aes(x = cut))
+
+
+
+# In a histogram, the `x` aesthetic variable must be numeric, and `stat_bin()` groups the observations into bins based on their numeric ranges. Since the numeric value of `NA` observations is unknown, they cannot be assigned to a specific bin and are therefore dropped. In contrast, `geom_bar()` treats `NA` as another category because the `x` aesthetic in `geom_bar()` requires a discrete (categorical) variable, and missing values are treated as an additional category.
+
+
+
+#2. What does na.rm = TRUE do in mean() and sum()?
+
+# This option removes NA values from the vector prior to calculating the mean and sum.
+
+
+
+mean(c(0, 1, 2, NA), na.rm = TRUE)
+
+
+
+sum(c(0, 1, 2, NA), na.rm = TRUE)
+
+
+
+# In a histogram, the x aesthetic variable needs to be numeric, and stat_bin() groups the observations by ranges into bins. Since the numeric value of the NA observations is unknown, they cannot be placed in a particular bin, and are dropped.
+
+
+
+## 10.5.1.1 Exercises
+
+#1. Use what you’ve learned to improve the visualization of the departure times of cancelled vs. non-cancelled flights.
+
+nycflights13::flights %>%
+  
+  mutate(
+    
+    cancelled = is.na(dep_time),
+    
+    sched_hour = sched_dep_time %/% 100,
+    
+    sched_min = sched_dep_time %% 100,
+    
+    sched_dep_time = sched_hour + sched_min / 60
+    
+  ) %>%
+  
+  ggplot() +
+  
+  geom_boxplot(mapping = aes(y = sched_dep_time, x = cancelled))
+
+
+
+#2. Based on EDA, what variable in the diamonds dataset appears to be most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?
+
+# important variables: carat, clarity, color, and cut price and carat are continuous variables
+
+
+
+ggplot(diamonds) +
+  
+  geom_point(aes(x = carat, y = price), color = "blue", alpha = 0.5)
+
+
+
+ggplot(diamonds) +
+  
+  geom_point(aes(x = depth, y = price), color = "red", alpha = 0.5)
+
+
+
+ggplot(diamonds) +
+  
+  geom_point(aes(x = table, y = price), color = "red", alpha = 0.5)
+
+
+
+ggplot(diamonds) +
+  
+  geom_point(aes(x = x, y = price), color = "red", alpha = 0.5)
+
+
+
+ggplot(diamonds) +
+  
+  geom_point(aes(x = z, y = price), color = "red", alpha = 0.5)
+
+
+
+# Volume and weight are two variables that is most important for predicting the price. Since volume is highly correlated with weight, they can be considered to be one variable.
+
+
+
+ggplot(diamonds) +
+  
+  geom_boxplot(aes(x = cut, y = carat))
+
+
+
+# Because better cut has lower carat which makes their price lower, so if we don’t look at carat, it would appear that better cut has lower price.
+
+
+
+#3. Instead of exchanging the x and y variables, add coord_flip() as a new layer to the vertical boxplot to create a horizontal one. How does this compare to exchanging the variables?
+
+ggplot(data = diamonds) +
+  
+  geom_boxplot(mapping = aes(x = reorder(cut, carat, FUN = median), y = carat)) +
+  
+  coord_flip()
+
+
+
+#4. One problem with boxplots is that they were developed in an era of much smaller datasets and tend to display a prohibitively large number of “outlying values”. One approach to remedy this problem is the letter value plot. Install the lvplot package, and try using geom_lv() to display the distribution of price vs. cut. What do you learn? How do you interpret the plots?
+
+# Could not install the "lvplot" package. It says it does not exist.
+
+
+
+#5. Create a visualization of diamond prices vs. a categorical variable from the diamonds dataset using geom_violin(), then a faceted geom_histogram(), then a colored geom_freqpoly(), and then a colored geom_density(). Compare and contrast the four plots. What are the pros and cons of each method of visualizing the distribution of a numerical variable based on the levels of a categorical variable?
+
+
+
+ggplot(diamonds) +
+  
+  geom_histogram(aes(x = price)) +
+  
+  facet_wrap(~cut)
+
+
+
+ggplot(diamonds) +
+  
+  geom_freqpoly(aes(x = price)) +
+  
+  facet_wrap(~cut)
+
+
+
+ggplot(diamonds) +
+  
+  geom_violin(aes(x = cut, y = price))
+
+
+
+# Violin plot is best to compare the density distribution across different categories.
+
+
+
+#6. If you have a small dataset, it’s sometimes useful to use geom_jitter() to avoid overplotting to more easily see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to geom_jitter(). List them and briefly describe what each one does.
+
+# If you have a small dataset, it’s sometimes useful to use geom_jitter() to see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to geom_jitter(). List them and briefly describe what each one does.
+
+
+
+## 10.5.2.1 Exercises
+
+#1. How could you rescale the count dataset above to more clearly show the distribution of cut within color, or color within cut?
+
+
+
+diamonds %>%
+  
+  count(color, cut) %>%
+  
+  group_by(color) %>%
+  
+  mutate(prop = n / sum(n)) %>%
+  
+  ggplot(mapping = aes(x = color, y = cut)) +
+  
+  geom_tile(mapping = aes(fill = prop))
+
+
+
+diamonds %>%
+  
+  count(color, cut) %>%
+  
+  group_by(cut) %>%
+  
+  mutate(prop = n / sum(n)) %>%
+  
+  ggplot(mapping = aes(x = color, y = cut)) +
+  
+  geom_tile(mapping = aes(fill = prop))
+
+
+
+#2. What different data insights do you get with a segmented bar chart if color is mapped to the x aesthetic and cut is mapped to the fill aesthetic? Calculate the counts that fall into each of the segments.
+
+
+
+ggplot(diamonds, aes(x = color, fill = cut)) +
+  
+  geom_bar()
+
+
+
+ggsave("r-10-5-2-1-q2.png")
+
+
+
+diamonds |>
+  
+  count(color, cut)
+
+
+
+# This bar chart shows that the color G has the most diamonds; the largest amount of diamonds are considered ideal, premium, and very good, while the least amount of diamonds are considered fair and good. The counts within each segment show the total diamonds that are the cut within in each color then
+
+
+
+#3. Use geom_tile() together with dplyr to explore how average flight departure delays vary by destination and month of year. What makes the plot difficult to read? How could you improve it?
+
+flights %>%
+  
+  group_by(month, dest) %>%
+  
+  summarise(dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+  
+  ggplot(aes(x = factor(month), y = dest, fill = dep_delay)) +
+  
+  geom_tile() +
+  
+  labs(x = "Month", y = "Destination", fill = "Departure Delay")
+
+
+
+flights %>%
+  
+  group_by(month, dest) %>%                                 # This gives us (month, dest) pairs
+  
+  summarise(dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+  
+  group_by(dest) %>%                                        # group all (month, dest) pairs by dest ..
+  
+  filter(n() == 12) %>%                                     # and only select those that have one entry per month 
+  
+  ungroup() %>%
+  
+  mutate(dest = reorder(dest, dep_delay)) %>%
+  
+  ggplot(aes(x = factor(month), y = dest, fill = dep_delay)) +
+  
+  geom_tile() +
+  
+  labs(x = "Month", y = "Destination", fill = "Departure Delay")
+
+
+
+## 10.5.3.1 Exercises
+
+#1. Instead of summarizing the conditional distribution with a boxplot, you could use a frequency polygon. What do you need to consider when using cut_width() vs. cut_number()? How does that impact a visualization of the 2d distribution of carat and price?
+
+
+
+ggplot(
+  
+  data = diamonds,
+  
+  mapping = aes(color = cut_number(carat, 5), x = price)
+  
+) +
+  
+  geom_freqpoly() +
+  
+  labs(x = "Price", y = "Count", color = "Carat")
+
+
+
+ggplot(
+  
+  data = diamonds,
+  
+  mapping = aes(color = cut_width(carat, 1, boundary = 0), x = price)
+  
+) +
+  
+  geom_freqpoly() +
+  
+  labs(x = "Price", y = "Count", color = "Carat")
+
+
+
+#2. Visualize the distribution of carat, partitioned by price.
+
+
+
+ggplot(diamonds, aes(x = cut_number(price, 10), y = carat)) +
+  
+  geom_boxplot() +
+  
+  coord_flip() +
+  
+  xlab("Price")
+
+
+
+#3. How does the price distribution of very large diamonds compare to small diamonds? Is it as you expect, or does it surprise you?
+
+# The prices of very large diamonds are more variable, which isn’t surprising in hindsight, even though I initially knew little about diamond pricing. This variability could be explained by how diamonds are selected for retail sales. Smaller diamonds are likely only profitable to sell if their cut, clarity, and color are all exceptional, leading to more consistent characteristics and less price variation. In contrast, larger diamonds may still be profitable even if the cut, clarity, or color aren’t as high-quality, resulting in a wider range of characteristics and greater variability in prices.
+
+
+
+#4. Combine two of the techniques you’ve learned to visualize the combined distribution of cut, carat, and price.
+
+
+
+ggplot(diamonds, aes(x = cut_number(carat, 5), y = price, colour = cut)) +
+  
+  geom_boxplot()
+
+
+
+#5. Two dimensional plots reveal outliers that are not visible in one dimensional plots. For example, some points in the following plot have an unusual combination of x and y values, which makes the points outliers even though their x and y values appear normal when examined separately. Why is a scatterplot a better display than a binned plot for this case?
+
+# In this case, there is a strong relationship between x and y. The outliers in this case are not extreme in either x or y. A binned plot would not reveal these outliers, and may lead us to conclude that the largest value of x was an outlier even though it appears to fit the bivariate pattern well.
+
+
+
+diamonds |> 
+  
+  filter(x >= 4) |> 
+  
+  ggplot(aes(x = x, y = y)) +
+  
+  geom_point() +
+  
+  coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+
+
+
+#6. Instead of creating boxes of equal width with cut_width(), we could create boxes that contain roughly equal number of points with cut_number(). What are the advantages and disadvantages of this approach?
+
+# Both cut_width() and cut_number() split a variable into groups. When using cut_width(), we need to choose the width, and the number of bins will be calculated automatically. When using cut_number(), we need to specify the number of bins, and the widths will be calculated automatically.
