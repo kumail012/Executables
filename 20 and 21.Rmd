@@ -1,0 +1,160 @@
+---
+title: "Chapter 20 and 21"
+output: pdf_document
+date: "2025-05-02"
+---
+# Prerequisites (Packages & Libraries)
+
+library(tidyverse)
+library(ggrepel)
+library(nycflights13)
+library(ggthemes)
+library(ggplot2)
+library(rlang)
+library(forcats)
+library(gt)
+library(readxl)
+library(writexl)
+library(DBI)
+library(dbplyr)
+library(googlesheets4)
+
+## 20.2.9 Exercises
+#1. In an Excel file, create the following dataset and save it as survey.xlsx. Alternatively, you can download it as an Excel file from here.
+
+# Then, read it into R, with survey_id as a character variable and n_pets as a numerical variable.
+
+survey_df = tibble(
+  survey_id = c(1:6),
+  n_pets = c(0,1,"N/A", "two", 2, "")
+)
+
+survey_df |>
+  write_xlsx("survey.xlsx")
+
+df = read_excel(
+  path = "survey.xlsx",
+  col_names = TRUE,
+  col_types = c("text", "text"),
+  na = c("N/A", "")
+  ) |>
+  mutate(
+    n_pets = ifelse(n_pets == "two", 2, n_pets),
+    n_pets = parse_number(n_pets)
+    )
+
+df
+
+#2. In another Excel file, create the following dataset and save it as roster.xlsx. Alternatively, you can download it as an Excel file from here.
+
+# Then, read it into R. The resulting data frame should be called roster and should look like the following.
+
+read_excel(
+  path = "roster.xlsx"
+  ) |>
+  fill(group, subgroup)
+
+#3. In a new Excel file, create the following dataset and save it as sales.xlsx. Alternatively, you can download it as an Excel file from here.
+
+#a. Read sales.xlsx in and save as sales. The data frame should look like the following, with id and n as column names and with 9 rows.
+
+sales = read_excel(
+      "sales.xlsx",
+      skip = 4,
+      col_names = c("id", "n")
+    )
+    sales
+
+#b. Modify sales further to get it into the following tidy format with three columns (brand, id, and n) and 7 rows of data. Note that id and n are numeric, brand is a character variable.
+
+sales |>
+      mutate(
+        brand = ifelse(str_detect(id, "Brand"), id, NA),
+        id = parse_number(id),
+        n = parse_number(n, na = "n")) |>
+      fill(brand) |>
+      drop_na() |>
+      relocate(brand)
+
+#4. Recreate the bake_sale data frame, write it out to an Excel file using the write.xlsx() function from the openxlsx package.
+
+bake_sale = tibble(
+  item = factor(c("brownie", "cupcake", "cookie")),
+  quantity = c(10, 5, 8)
+)
+
+bake_sale |>
+  write_xlsx("bake_sale.xlsx")
+
+#5. In Chapter 7 you learned about the janitor::clean_names() function to turn column names into snake case. Read the students.xlsx file that we introduced earlier in this section and use this function to “clean” the column names.
+
+raw_data = structure(list(Student ID = c(1, 2, 3, 4, 5, 6), Full Name = c("Sunil Huffmann", "Barclay Lynn", "Jayendra Lyne", "Leon Rossini", "Chidiegwu Dunkel","Güvenç Attila"), favourite.food = c("Strawberry yoghurt", "French fries", "N/A", "Anchovies", "Pizza", "Ice cream"), mealPlan = c("Lunch only", "Lunch only", "Breakfast and lunch", "Lunch only", "Breakfast and lunch", "Lunch only"), AGE = list(4, 5, 7, NULL, "five", 6)), class = c("tbl_df", "tbl", "data.frame"), row.names = c(NA, -6L))
+
+raw_data |>
+  janitor::clean_names() |>
+  as_tibble()
+
+#6. What happens if you try to read in a file with .xlsx extension with read_xls()?
+
+# If we try to open a *.xlsx file with read_xls() , an error is displayed that Error: *filepath* libxls error: Unable to open file
+
+## 20.3.6 Exercises
+
+#1. Read the students dataset from earlier in the chapter from Excel and also from Google Sheets, with no additional arguments supplied to the read_excel() and read_sheet() functions. Are the resulting data frames in R exactly the same? If not, how are they different?
+
+df_xl = read_excel("students.xlsx")
+
+gs4_deauth()
+
+url_id = "1V1nPp1tzOuutXFLb3G9Eyxi3qxeEhnOXUzL5_BcCQ0w"
+
+df_gs = read_sheet(url_id)
+
+# Comparing the types of columns in the two data.frames
+sapply(df_xl, class) == sapply(df_gs, class)
+
+class(df_xl$AGE)
+
+class(df_gs$AGE)
+
+sapply(df_gs$AGE, class)
+
+#2. Read the Google Sheet titled survey from https://pos.it/r4ds-survey, with survey_id as a character variable and n_pets as a numerical variable.
+
+url_gs = "https://docs.google.com/spreadsheets/d/1yc5gL-a2OOBr8M7B3IsDNX5uR17vBHOyWZq6xSTG2G8/edit#gid=0"
+
+read_sheet(
+  ss = url_gs,
+  col_types = "cd")
+
+#3. Read the Google Sheet titled roster from https://pos.it/r4ds-roster. The resulting data frame should be called roster and should look like the following.
+
+url_gs1 = "https://docs.google.com/spreadsheets/d/1LgZ0Bkg9d_NK8uTdP2uHXm07kAlwx8-Ictf8NocebIE/edit#gid=0"
+
+read_sheet(
+  ss = url_gs1
+) |>
+fill(group, subgroup)  
+
+## 21.5.10 Exercises
+
+connection <- DBI::dbConnect(duckdb::duckdb())
+dbWriteTable(connection, name = "db_diamonds", value = ggplot2::diamonds)
+
+db_df <- tbl(connection, "db_diamonds")
+
+#1. What is distinct() translated to? How about head()?
+
+db_df |>
+  distinct(cut) |>
+  show_query()
+
+db_df |>
+  head() |>
+  show_query()
+
+#2. Explain what each of the following SQL queries do and try recreate them using dbplyr.
+
+#a. The code above is equivalent to dplyr's flights |> filter(dep_delay < arr_delay) .
+
+#b. The code above is equivalent to dplyr's flights |> mutate(speed = distance / (airtime / 60))
