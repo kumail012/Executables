@@ -1,0 +1,46 @@
+---
+title: "Chapter 29"
+output: pdf_document
+date: "2025-05-13"
+---
+
+{r}
+library(DT)
+library(tidyverse)
+library(knitr)
+library(leaflet)
+
+
+Lets create an interactive HTML Map here.
+
+{r}
+#| label: fig-leaflet
+#| fig-cap: "A map of Rock Valley Pt, Rock Island, Illinois using Leaflet"
+#| fig-cap-location: top
+
+
+library(leaflet)
+leaflet() |>
+  setView(-90.550604, 41.501591, zoom = 15) |> 
+  addTiles() |>
+  addMarkers(-90.550805, 41.502295, 
+             popup = "Augustana College")  |>
+  addMarkers(-90.550073,
+             41.505162,
+             popup = "Hyvee")
+
+
+Using DT for interactive tables:
+
+An example of using DT for an interactive table :-
+
+{r}
+#| label: fig-DTtable
+#| fig-cap: "A visually pleasing table produced using DT package"
+#| fig-cap-location: top
+diamonds |>
+  filter(carat > 3) |>
+  datatable(colnames = c("Carat", "Cut", "Color",
+                         "Clarity", "Depth", "Table",
+                         "Price", "X", "Y", "Z"),
+            rownames = FALSE)
