@@ -1,0 +1,85 @@
+---
+title: "Import work"
+output: pdf_document
+date: "2025-05-14"
+---
+{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(scales)
+library(tidyr)
+
+
+### Setup: Import the Data
+
+{r, warning=FALSE, message=FALSE}
+df <- read_csv("Data for Importation.csv")
+
+
+### Step 1: Divide Names into First and Last
+
+{r}
+df <- df %>%
+  select(-starts_with("...")) %>%
+  separate(`Employee Name`, into = c("Last", "First"), sep = ", ")
+
+
+### Step 2: Convert All Fields to Appropriate Data Types
+
+{r}
+df <- df %>%
+  mutate(
+    Building = as.factor(Building),
+    Department = as.factor(Department),
+    Status = as.factor(Status),
+    `Job Rating` = as.numeric(`Job Rating`),
+    Compensation = as.numeric(Compensation),
+    `New Comp.` = as.numeric(`New Comp.`)
+  )
+
+
+### Step 3: Convert Hire Date to Standard R Date Format
+
+{r}
+df <- df %>%
+  mutate(`Hire Date` = as.Date(`Hire Date`, origin = "1899-12-30"))
+
+
+### Step 4: Calculate Years of Tenure
+
+{r}
+df <- df %>%
+  mutate(Tenure = round(as.numeric(difftime(Sys.Date(), `Hire Date`, units = "days")) / 365, 1))
+
+
+### Step 5: Format Compensation as US Dollars
+
+{r}
+df <- df %>%
+  mutate(Compensation_USD = dollar(Compensation))
+
+
+### Step 6: Format New Compensation as US Dollars
+
+{r}
+df <- df %>%
+  mutate(New_Comp_USD = dollar(`New Comp.`))
+
+
+### Step 7: Calculate Percent Increase in Compensation
+
+{r}
+df <- df %>%
+  mutate(Percent_Increase = round((`New Comp.` - Compensation) / Compensation * 100, 1))
+
+
+### Step 8: Visualize Tenure vs Compensation Increase by Department
+
+{r}
+ggplot(df, aes(x = Tenure, y = Percent_Increase, color = Department)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Tenure vs Compensation Increase by Department",
+       x = "Tenure (Years)",
+       y = "Compensation % Increase")
